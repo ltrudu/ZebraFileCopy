@@ -1,5 +1,7 @@
 package com.zebra.zebrafilecopy;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler mScrollDownHandler = null;
     private Runnable mScrollDownRunnable = null;
 
+    public static MainActivity mMainActivity = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +45,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private String getAppVersionName() {
+        String versionName = "";
+        try {
+            PackageManager packageManager = getPackageManager();
+            String packageName = getPackageName();
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
+            versionName = packageInfo.versionName;
+            int versionCode = packageInfo.versionCode;
+             Log.d("AppVersion", "Version Name: " + versionName);
+            Log.d("AppVersion", "Version Code: " + versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionName;
+    }
+
     private void displayDocumentation() {
         addLineToResults("********************************\n");
-        addLineToResults("Zebra File Copy\n");
+        addLineToResults("Zebra File Copy " + getAppVersionName() +"\n");
         addLineToResults("********************************\n");
         addLineToResults("Documentation");
         addLineToResults("Copy paste what you need.");
@@ -117,10 +136,12 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mScrollDownHandler = new Handler(Looper.getMainLooper());
         displayDocumentation();
+        mMainActivity = this;
     }
 
     @Override
     protected void onPause() {
+        mMainActivity = null;
         if(mScrollDownRunnable != null)
         {
             mScrollDownHandler.removeCallbacks(mScrollDownRunnable);
@@ -130,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    private void addLineToResults(final String lineToAdd)
+    public void addLineToResults(final String lineToAdd)
     {
         mResults += lineToAdd + "\n";
         updateAndScrollDownTextView();

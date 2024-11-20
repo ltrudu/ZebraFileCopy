@@ -1,6 +1,8 @@
 package com.zebra.zebrafilecopy;
 
 import android.app.Application;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -23,6 +25,9 @@ public class MainApplication extends Application {
 
     public static iMainApplicationCallback iMainApplicationCallback = null;
 
+    AppRestrictionsChangeReceiver appRestrictionsChangeReceiver = new AppRestrictionsChangeReceiver();
+
+
     // Let's Add a fake delay of 2000 milliseconds just for the show ;)
     // Otherwise Splash Screen is too fast
     private final static int S_FAKE_DELAY = 500;
@@ -30,6 +35,8 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        registerRestrictionChangesReceiver();
 
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
@@ -66,5 +73,13 @@ public class MainApplication extends Application {
                 });
             }
         }, S_FAKE_DELAY); // Let's add some S_FAKE_DELAY like in music production
+    }
+
+    private void registerRestrictionChangesReceiver()
+    {
+        IntentFilter restrictionsFilter =
+                new IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED);
+
+        registerReceiver(appRestrictionsChangeReceiver, restrictionsFilter);
     }
 }
