@@ -23,6 +23,8 @@
         <uses-library
             android:name="com.symbol.emdk"
             android:required="true" />
+        <meta-data android:name="android.content.APP_RESTRICTIONS"
+            android:resource="@xml/app_restrictions" />
         <activity
             android:name=".SplashActivity"
             android:exported="true">
@@ -45,6 +47,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+        <!-- Register the managed configuration broadcast receiver -->
+        <receiver android:name=".AppRestrictionsChangeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.APPLICATION_RESTRICTIONS_CHANGED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

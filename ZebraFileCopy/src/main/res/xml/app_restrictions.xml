@@ -1,0 +1,22 @@
+<restrictions xmlns:android="http://schemas.android.com/apk/res/android">
+    <restriction
+        android:key="SourceFile"
+        android:title="Source file [Mandatory]"
+        android:restrictionType="string"
+        android:defaultValue="/default/source/file/path" />
+    <restriction
+        android:key="DestinationFile"
+        android:title="Destination file [Mandatory]"
+        android:restrictionType="string"
+        android:defaultValue="/default/destination/file/path" />
+    <restriction
+        android:key="OptionalNumericalCHMOD"
+        android:title="Numerical Chmod [Optional]"
+        android:restrictionType="integer"
+        android:defaultValue="-1" />
+    <restriction
+        android:key="OptionalUnixStyleCHMOD"
+        android:title="Unix Style Chmod [Optional]"
+        android:restrictionType="string"
+        android:defaultValue="" />
+</restrictions>

@@ -109,7 +109,7 @@ public class FileHelper {
         return specialBits + (permissionBits[0] * 64) + (permissionBits[1] * 8) + permissionBits[2];
     }
 
-    public static String convertPermissionToOctalString(String permission) {
+    public static String convertPermissionToOctalString(String permission) throws IllegalArgumentException{
         if (permission == null || permission.length() != 10) {
             throw new IllegalArgumentException("Permission string must be 10 characters long");
         }

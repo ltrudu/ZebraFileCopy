@@ -32,3 +32,5 @@ google-services.json
 # Android Profiling
 *.hprof
 ZebraFileCopy/debug/output-metadata.json
+ZebraFileCopy/debug/
+ZebraFileCopy/release/
