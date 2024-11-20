@@ -9,22 +9,36 @@ Copy paste what you need.
 Use intent to copy files.
 
 
+```cmd
 adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml"
+```
 
 
-adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmod "0666"
-
+Use intent to copy files and change its permission using a numerical chmod. 
 
 chmod should be a numerical value 0XXX with the octal representation of permissions.
-recommended chmod is 0666.
+
+Recommended chmod is 0666.
 
 
-adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmodunix "-rw-rw-rw-"
+```cmd
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmod "0666"
+```
 
+
+Use intent to copy files and change its permission using a unix notation chmod.
 
 chmodstring should be a text value of 10 characters begining whith - with this structure -XXXXXXXXX where X can be rwxst depending on the position.
+
 Read linux documentation for more information.
-recommended chmodunix is -rw-rw-rw-.
+
+Recommended chmodunix is -rw-rw-rw-.
+
+
+```cmd
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmodunix "-rw-rw-rw-"
+```
+
 
 Go to the site: https://chmod-calculator.app/ to calculate the CHMOD.
 
@@ -33,7 +47,7 @@ Go to the site: https://chmod-calculator.app/ to calculate the CHMOD.
 
 Or use the following XML to import a StageNow Profile:
 
-
+```xml
 <wap-provisioningdoc>
   <characteristic version="10.5" type="Intent">
     <parm name="Action" value="Broadcast" />
@@ -58,3 +72,4 @@ Or use the following XML to import a StageNow Profile:
     </characteristic>
   </characteristic>
 </wap-provisioningdoc>
+```
