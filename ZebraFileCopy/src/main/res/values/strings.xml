@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ZebraFileCopy</string>
+    <string name="app_title">Zebra File Copy</string>
+    <string name="loading_status">Loading Application</string>
+</resources>
