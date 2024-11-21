@@ -10,7 +10,7 @@ Use intent to copy files.
 
 
 ```cmd
-adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml"
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy.ext/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml"
 ```
 
 
@@ -22,7 +22,7 @@ Recommended chmod is 0666.
 
 
 ```cmd
-adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmod "0666"
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy.ext/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmod "0666"
 ```
 
 
@@ -36,7 +36,7 @@ Recommended chmodunix is -rw-rw-rw-.
 
 
 ```cmd
-adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmodunix "-rw-rw-rw-"
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy.ext/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/MotoRDP.xml" --es destination "/enterprise/usr/MotoRDP.xml" --es chmodunix "-rw-rw-rw-"
 ```
 
 
@@ -52,8 +52,8 @@ Or use the following XML to import a StageNow Profile:
   <characteristic version="10.5" type="Intent">
     <parm name="Action" value="Broadcast" />
     <parm name="ActionName" value="com.zebra.zebrafilecopy.copyfile" />
-    <parm name="Package" value="com.zebra.zebrafilecopy" />
-    <parm name="Class" value=".CopyBroadcastReceiver" />
+    <parm name="Package" value="com.zebra.zebrafilecopy.ext" />
+    <parm name="Class" value="com.zebra.zebrafilecopy.CopyBroadcastReceiver" />
     <parm name="Category" value="android.intent.category.DEFAULT" />
     <characteristic type="Extra">
       <parm name="ExtraType" value="string" />
@@ -70,6 +70,27 @@ Or use the following XML to import a StageNow Profile:
       <parm name="Extra2Name" value="chmodunix" />
       <parm name="Extra2Value" value="-rw-rw-rw-" />
     </characteristic>
+  </characteristic>
+</wap-provisioningdoc>
+```
+
+********************************
+
+Managed Configuration
+
+********************************
+
+To be able to process managed configuration settings and updates, the app need to be launched to register to the updates events.
+
+Or use the following XML to import a StageNow Profile if you want to start the application :
+
+```xml
+<wap-provisioningdoc>
+  <characteristic version="10.5" type="Intent">
+    <parm name="Action" value="StartActivity" />
+    <parm name="ActionName" value="android.intent.action.MAIN" />
+    <parm name="Package" value="com.zebra.zebrafilecopy.ext" />
+    <parm name="Class" value="com.zebra.zebrafilecopy.SplashActivity" />
   </characteristic>
 </wap-provisioningdoc>
 ```
