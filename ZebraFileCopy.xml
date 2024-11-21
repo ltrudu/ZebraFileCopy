@@ -2,8 +2,8 @@
   <characteristic version="10.5" type="Intent">
     <parm name="Action" value="Broadcast" />
     <parm name="ActionName" value="com.zebra.zebrafilecopy.copyfile" />
-    <parm name="Package" value="com.zebra.zebrafilecopy" />
-    <parm name="Class" value=".CopyBroadcastReceiver" />
+    <parm name="Package" value="com.zebra.zebrafilecopy.ext" />
+    <parm name="Class" value="com.zebra.zebrafilecopy.CopyBroadcastReceiver" />
     <parm name="Category" value="android.intent.category.DEFAULT" />
     <characteristic type="Extra">
       <parm name="ExtraType" value="string" />

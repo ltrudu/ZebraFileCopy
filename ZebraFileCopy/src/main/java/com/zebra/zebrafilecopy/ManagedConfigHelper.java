@@ -30,7 +30,7 @@ public class ManagedConfigHelper {
     public static void ProcessManagedConfiguration(Context context) {
         try {
             // Handle the configuration change
-            logInfo("AppRestrictionsChangeReceiver", "Managed configuration has been modified.");
+            logInfo("AppRestrictionsChangeReceiver", "Processing Managed configuration if available.");
 
             // Retrieve the new managed configurations
             RestrictionsManager myRestrictionsMgr =
