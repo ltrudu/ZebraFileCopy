@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ProtectedPermissions" />
 
+    <!-- Ensure necessary permissions are declared -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <queries>
         <package android:name="com.symbol.emdk.emdkservice" />
     </queries>
@@ -54,7 +57,12 @@
                 <action android:name="android.intent.action.APPLICATION_RESTRICTIONS_CHANGED" />
             </intent-filter>
         </receiver>
-
+        <!-- Register the broadcast receiver for BOOT_COMPLETED -->
+        <receiver android:name=".BootCompletedReceiver" android:enabled="true" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

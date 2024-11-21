@@ -137,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
         mScrollDownHandler = new Handler(Looper.getMainLooper());
         displayDocumentation();
         mMainActivity = this;
+        // Check if we have a managed configuration, if yes, process it
+        ManagedConfigHelper.ProcessManagedConfiguration(this);
     }
 
     @Override
