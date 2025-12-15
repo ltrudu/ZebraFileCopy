@@ -67,6 +67,7 @@ public class CopyBroadcastReceiver extends BroadcastReceiver {
 
                         Log.d(Constants.TAG, "Copying file from:" + sSource + " to destination:" + sDestination);
                         try {
+                            FileHelper.checkFolderPermissions(context, sDestination);
                             FileHelper.copyFile(sSource, sDestination);
                         } catch (IOException e) {
                             Log.e(Constants.TAG, "Exception while copying source:" + sSource + " to destination:" + sDestination + "\nException:" + e.getMessage());

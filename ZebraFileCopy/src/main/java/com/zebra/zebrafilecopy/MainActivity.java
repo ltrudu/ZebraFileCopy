@@ -3,6 +3,7 @@ package com.zebra.zebrafilecopy;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -15,6 +16,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import static com.zebra.zebrafilecopy.FileHelper.checkFolderPermissions;
 import static com.zebra.zebrafilecopy.FileHelper.copyFile;
 import static com.zebra.zebrafilecopy.FileHelper.setChmod;
 
@@ -42,28 +44,14 @@ public class MainActivity extends AppCompatActivity {
         sv_results = (ScrollView)findViewById(R.id.sv_results);
 
         //copyMotoRDP();
-
+        //copyFileStatic("/sdcard/Documents/Config.xml", "/sdcard/Android/data/com.zebra.mdna.enterprisebrowser/images/Config.xml", "-rw-rw-rw-");
     }
 
-    private String getAppVersionName() {
-        String versionName = "";
-        try {
-            PackageManager packageManager = getPackageManager();
-            String packageName = getPackageName();
-            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
-            versionName = packageInfo.versionName;
-            int versionCode = packageInfo.versionCode;
-             Log.d("AppVersion", "Version Name: " + versionName);
-            Log.d("AppVersion", "Version Code: " + versionCode);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return versionName;
-    }
+
 
     private void displayDocumentation() {
         addLineToResults("********************************\n");
-        addLineToResults("Zebra File Copy " + getAppVersionName() +"\n");
+        addLineToResults("Zebra File Copy " + FileHelper.getAppVersionName(this) +"\n");
         addLineToResults("********************************\n");
         addLineToResults("Documentation");
         addLineToResults("Copy paste what you need.");
@@ -123,6 +111,35 @@ public class MainActivity extends AppCompatActivity {
             else
             {
                 Log.d(Constants.TAG, "Chmod set to 0777 on file /enterprise/usr/MotoRDP.xml");
+            }
+            finish();
+        } catch (Exception e) {
+            Log.e(Constants.TAG, "Exception :" + e.getMessage());
+        }
+        finish();
+    }
+
+
+    private void copyFileStatic(String sourcePath, String destPath, String chMod) {
+        try {
+            String nChmod_octalString = FileHelper.convertPermissionToOctalString(chMod);
+
+            int nChmod_octal = Integer.parseInt(nChmod_octalString, 8);
+            int nChmod = Integer.parseInt(nChmod_octalString);
+            Log.d(Constants.TAG, "Copying file: " + sourcePath + "to " + destPath);
+            checkFolderPermissions(this, destPath);
+            copyFile(sourcePath, destPath);
+            Log.d(Constants.TAG, "File: " + sourcePath + "copied successfully to" + destPath);
+            setChmod(destPath, nChmod_octal);
+            int newChmod = 0;
+            newChmod = FileHelper.getPermissions(destPath);
+            if(newChmod != nChmod)
+            {
+                Log.e(Constants.TAG, "Error, chmod not set on file:" + destPath + "\nChmod expected: " + String.valueOf(nChmod) + "\nChmod found: " + String.valueOf(newChmod));
+            }
+            else
+            {
+                Log.d(Constants.TAG, "Chmod set to " + String.valueOf(newChmod) + " on file /enterprise/usr/MotoRDP.xml");
             }
             finish();
         } catch (Exception e) {

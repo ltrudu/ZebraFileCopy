@@ -1,8 +1,12 @@
 package com.zebra.zebrafilecopy;
 
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.RestrictionsManager;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.util.Log;
 
 import com.zebra.criticalpermissionshelper.CriticalPermissionsHelper;
@@ -14,7 +18,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 
+import androidx.annotation.Nullable;
 import androidx.enterprise.feedback.KeyedAppState;
+import androidx.enterprise.feedback.KeyedAppStatesCallback;
 import androidx.enterprise.feedback.KeyedAppStatesReporter;
 
 import static com.zebra.zebrafilecopy.Constants.DEFAULT_DESTINATION_FILE;
@@ -30,7 +36,7 @@ public class ManagedConfigHelper {
     public static void ProcessManagedConfiguration(Context context) {
         try {
             // Handle the configuration change
-            logInfo("AppRestrictionsChangeReceiver", "Processing Managed configuration if available.");
+            logInfo("AppRestrictionsChangeReceiver : Processing Managed configuration if available.");
 
             // Retrieve the new managed configurations
             RestrictionsManager myRestrictionsMgr =
@@ -40,7 +46,7 @@ public class ManagedConfigHelper {
 
             if (myRestrictionsMgr != null) {
                 managedConfig = myRestrictionsMgr.getApplicationRestrictions();
-                logInfo("Managed config found:", managedConfig.toString());
+                logInfo("Managed config found:" +  managedConfig.toString());
             }
 
             if (managedConfig != null) {
@@ -49,10 +55,10 @@ public class ManagedConfigHelper {
                 int optionalNumericalCHMOD = managedConfig.getInt(KEY_NUMERICAL_CHMOD, DEFAULT_NUMERICAL_CHMOD);
                 String optionalUnixStyleCHMOD = managedConfig.getString(KEY_UNIX_CHMOD, DEFAULT_UNIX_CHMOD);
 
-                logInfo("AppRestrictionsChangeReceiver", "Source File: " + sourceFilePath);
-                logInfo("AppRestrictionsChangeReceiver", "Destination File: " + destinationFilePath);
-                logInfo("AppRestrictionsChangeReceiver", "Optional Numerical CHMOD: " + optionalNumericalCHMOD);
-                logInfo("AppRestrictionsChangeReceiver", "Optional Unix Style CHMOD: " + optionalUnixStyleCHMOD);
+                logInfo("AppRestrictionsChangeReceiver: " + "Source File: " + sourceFilePath);
+                logInfo("AppRestrictionsChangeReceiver: " + "Destination File: " + destinationFilePath);
+                logInfo("AppRestrictionsChangeReceiver: " + "Optional Numerical CHMOD: " + optionalNumericalCHMOD);
+                logInfo("AppRestrictionsChangeReceiver: " + "Optional Unix Style CHMOD: " + optionalUnixStyleCHMOD);
 
                 final String resultInfo = "Copying file from:\n" + sourceFilePath + "\nto:\n" + destinationFilePath + ((optionalNumericalCHMOD != -1 || optionalUnixStyleCHMOD != null) ? "\nwith chmod: " + ((optionalNumericalCHMOD != -1 ? optionalNumericalCHMOD : optionalUnixStyleCHMOD)) : "") + "\n";
 
@@ -90,6 +96,7 @@ public class ManagedConfigHelper {
 
                         resultMessage += "Copying file from:" + sourceFilePath + " to destination:" + destinationFilePath + "\n";
                         try {
+                            FileHelper.checkFolderPermissions(context, destinationFilePath);
                             FileHelper.copyFile(sourceFilePath, destinationFilePath);
                         } catch (IOException e) {
                             sendFeedback(context, "Error", "Exception while copying source:" + sourceFilePath + " to destination:" + destinationFilePath + "\nException:" + e.getMessage());
@@ -155,14 +162,14 @@ public class ManagedConfigHelper {
 
                     @Override
                     public void onError(String message, String resultXML) {
-                        logError(Constants.TAG, "Critical permission helper error:" + message);
-                        logError(Constants.TAG, resultXML);
+                        logError("Critical permission helper error:" + message);
+                        logError(resultXML);
                         sendFeedback(context, "Error", "Critical permission helper error:" + message);
                     }
 
                     @Override
                     public void onDebugStatus(String message) {
-                        logInfo(Constants.TAG, "Critical permission helper debug:" + message);
+                        logInfo("Critical permission helper debug:" + message);
                     }
                 });
             } else {
@@ -176,38 +183,105 @@ public class ManagedConfigHelper {
     }
 
     private static void sendFeedback(Context context, String key, String message) {
-        if(MainActivity.mMainActivity != null)
+        logInfo("Feedback Channel: Key: " + key + ", Message: " + message);
+
+        if(hasRequiredPermissions(context) == false)
         {
-            MainActivity.mMainActivity.addLineToResults(key + ":" + message);
+            logError("Feedback Channel: No Internet permission");
+            return;
         }
-        Log.d(Constants.TAG, key + ":" + message);
-        KeyedAppStatesReporter reporter = KeyedAppStatesReporter.create(context);
-        Collection states = new HashSet<>();
-        int severity = KeyedAppState.SEVERITY_INFO;
-        if(key.equalsIgnoreCase("Error"))
-            severity = KeyedAppState.SEVERITY_ERROR;
-        states.add(KeyedAppState.builder()
-                .setKey(Constants.TAG)
-                .setSeverity(severity)
-                .setMessage(key)
-                .setData(message)
-                .build());
-        reporter.setStatesImmediate(states);
+
+        try {
+            logInfo("Feedback Channel: Creating the KeyedAppStatesReporter");
+            // Create the KeyedAppStatesReporter instance
+            KeyedAppStatesReporter reporter = KeyedAppStatesReporter.create(context.getApplicationContext());
+            if(reporter == null)
+            {
+                logError("Feedback Channel: Error creating the KeyedAppStatesReporter");
+                return;
+            }
+            else
+            {
+                logInfo("Feedback Channel: KeyedAppStatesReporter created with success");
+            }
+
+            Collection<KeyedAppState> states = new HashSet<>();
+
+            // Determine the severity based on the key
+            int severity = KeyedAppState.SEVERITY_INFO;
+            if (key.equalsIgnoreCase("Error")) {
+                severity = KeyedAppState.SEVERITY_ERROR;
+            }
+
+            logInfo("Feedback Channel: Creating the states for feedback channel");
+            // Add the state to the collection
+            states.add(KeyedAppState.builder()
+                    .setKey(key)
+                    .setSeverity(severity)
+                    .setMessage(message)
+                    .setData(FileHelper.getAppVersionName(context))
+                    .build());
+
+            if(states == null)
+            {
+                logInfo("Feedback Channel: Error creating the states for feedback channel");
+            }
+            else
+            {
+                logInfo("Feedback Channel: States created with success");
+            }
+
+            // Report the states
+            reporter.setStatesImmediate(states, new KeyedAppStatesCallback() {
+                @Override
+                public void onResult(int state, @Nullable Throwable throwable) {
+                    logInfo("Feedback Channel: State = " + String.valueOf(state));
+                    switch(state)
+                    {
+                        case STATUS_SUCCESS:
+                            logInfo("Feedback Channel: States reported successfully.");
+                            break;
+                        case STATUS_UNKNOWN_ERROR:
+                            logError("Feedback Channel: Unknown error.");
+                            break;
+                        case STATUS_TRANSACTION_TOO_LARGE_ERROR:
+                            logError("Feedback Channel: Transaction too large.");
+                            break;
+                        case STATUS_EXCEEDED_BUFFER_ERROR:
+                            logError("Feedback Channel: Exceed buffer error");
+                            break;
+                    }
+                    if(throwable != null)
+                    {
+                        logError(throwable.getMessage());
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            logError("Error reporting states: "+ e.getMessage());
+        }
     }
 
-    private static void logInfo(String tag, String message)
+    private static void logInfo(String message)
     {
-        Log.d(tag,  message);
+        Log.d(Constants.TAG,  message);
         if(MainActivity.mMainActivity != null)
         {
-            MainActivity.mMainActivity.addLineToResults( "Debug: " + message);
+            //MainActivity.mMainActivity.addLineToResults( "Debug: " + message);
         }
     }
 
-    private static void logError(String tag, String message) {
-        Log.e(tag, message);
+    private static void logError(String message) {
+        Log.e(Constants.TAG, message);
         if (MainActivity.mMainActivity != null) {
             MainActivity.mMainActivity.addLineToResults("Error: " + message);
         }
     }
+
+    private static boolean hasRequiredPermissions(Context context) {
+        return context.checkSelfPermission(android.Manifest.permission.INTERNET)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
 }
