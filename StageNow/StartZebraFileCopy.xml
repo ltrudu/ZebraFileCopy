@@ -1,0 +1,8 @@
+﻿<wap-provisioningdoc>
+  <characteristic version="10.5" type="Intent">
+    <parm name="Action" value="StartActivity" />
+    <parm name="ActionName" value="android.intent.action.MAIN" />
+    <parm name="Package" value="com.zebra.zebrafilecopy.ext" />
+    <parm name="Class" value="com.zebra.zebrafilecopy.SplashActivity" />
+  </characteristic>
+</wap-provisioningdoc>
