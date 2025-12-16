@@ -6,6 +6,7 @@ public class Constants {
     public static final String EXTRA_CONFIGURATION_DESTINATION = "destination";
     public static final String EXTRA_CONFIGURATION_CHMOD = "chmod";
     public static final String EXTRA_CONFIGURATION_CHMODSTRING = "chmodunix";
+    public static final String EXTRA_CONFIGURATION_USE_MX = "usemx";
 
     /** Manage configuration **/
     public static final String APPLICATION_RESTRICTIONS_CHANGED = "android.intent.action.APPLICATION_RESTRICTIONS_CHANGED";

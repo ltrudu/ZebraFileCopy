@@ -97,7 +97,7 @@ public class ManagedConfigHelper {
                         resultMessage += "Copying file from:" + sourceFilePath + " to destination:" + destinationFilePath + "\n";
                         try {
                             FileHelper.checkFolderPermissions(context, destinationFilePath);
-                            FileHelper.copyFile(sourceFilePath, destinationFilePath);
+                            FileHelper.copyFile(sourceFilePath, destinationFilePath, false, context);
                         } catch (IOException e) {
                             sendFeedback(context, "Error", "Exception while copying source:" + sourceFilePath + " to destination:" + destinationFilePath + "\nException:" + e.getMessage());
                             return;

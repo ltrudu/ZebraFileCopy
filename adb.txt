@@ -1,0 +1,3 @@
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/enterprisebrowser" --es destination "/enterprise/device/" --es chmod "0666"
+
+adb shell am broadcast -a com.zebra.zebrafilecopy.copyfile -n com.zebra.zebrafilecopy/com.zebra.zebrafilecopy.CopyBroadcastReceiver --es source "/sdcard/Documents/enterprisebrowser/Config.xml" --es destination "/enterprise/device/enterprisebrowser/Config.xml" --es usemx "true"

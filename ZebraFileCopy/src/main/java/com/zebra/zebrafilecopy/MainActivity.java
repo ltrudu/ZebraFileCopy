@@ -1,5 +1,6 @@
 package com.zebra.zebrafilecopy;
 
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private static boolean mOptmizeRefresh = true;
     private Handler mScrollDownHandler = null;
     private Runnable mScrollDownRunnable = null;
+
 
     public static MainActivity mMainActivity = null;
 
@@ -99,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             int nChmod_octal = Integer.parseInt(nChmod_octalString, 8);
             int nChmod = Integer.parseInt(nChmod_octalString);
             Log.d(Constants.TAG, "Copying file: /sdcard/Documents/MotoRDP.xml to /enterprise/usr/MotoRDP.xml");
-            copyFile("/sdcard/Documents/MotoRDP.xml", "/enterprise/usr/MotoRDP.xml");
+            copyFile("/sdcard/Documents/MotoRDP.xml", "/enterprise/usr/MotoRDP.xml", false, this);
             Log.d(Constants.TAG, "File: /sdcard/Documents/MotoRDP.xml copied successfully to /enterprise/usr/MotoRDP.xml");
             setChmod("/enterprise/usr/MotoRDP.xml", nChmod_octal);
             int newChmod = 0;
@@ -120,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void copyFileStatic(String sourcePath, String destPath, String chMod) {
+    private void copyFileStatic(String sourcePath, String destPath, String chMod, boolean useMx) {
         try {
             String nChmod_octalString = FileHelper.convertPermissionToOctalString(chMod);
 
@@ -128,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             int nChmod = Integer.parseInt(nChmod_octalString);
             Log.d(Constants.TAG, "Copying file: " + sourcePath + "to " + destPath);
             checkFolderPermissions(this, destPath);
-            copyFile(sourcePath, destPath);
+            copyFile(sourcePath, destPath, useMx, this);
             Log.d(Constants.TAG, "File: " + sourcePath + "copied successfully to" + destPath);
             setChmod(destPath, nChmod_octal);
             int newChmod = 0;

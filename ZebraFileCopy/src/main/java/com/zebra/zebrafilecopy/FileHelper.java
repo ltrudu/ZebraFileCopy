@@ -6,12 +6,18 @@ import android.content.Intent;
 import android.content.UriPermission;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.provider.DocumentsContract;
 import android.util.Log;
+
+import com.zebra.criticalpermissionshelper.CriticalPermissionsHelper;
+import com.zebra.criticalpermissionshelper.EPermissionType;
+import com.zebra.criticalpermissionshelper.IResultCallbacks;
+import com.zebra.criticalpermissionshelper.ProfileManagerCommand;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -21,7 +27,9 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -127,34 +135,189 @@ public class FileHelper {
         return false;
     }
 
-    public static void copyFile(String srcPath, String destPath) throws IOException {
+    public static void copyFile(String srcPath, String destPath, boolean useMx, Context context) throws IOException {
+        if(useMx)
+        {
+            CountDownLatch latch = new CountDownLatch(1);
+            copyWithProfileManager(context, srcPath, destPath, new IResultCallbacks() {
+                @Override
+                public void onSuccess(String message, String resultXML) {
+                    Log.d(Constants.TAG, message);
+                    latch.countDown();
+                }
 
-        File sourceFile = new File(srcPath);
-        File destinationFile = new File(destPath + "_temporary");
+                @Override
+                public void onError(String message, String resultXML) {
+                    Log.e(Constants.TAG, message);
+                    Log.e(Constants.TAG, resultXML);
+                    latch.countDown();
+                }
 
-        if (!sourceFile.exists()) {
-            throw new IOException("Source file not found: " + srcPath);
-        }
-
-        if (!destinationFile.exists()) {
-            destinationFile.createNewFile();
-        }
-
-        try (FileInputStream fis = new FileInputStream(sourceFile);
-             FileOutputStream fos = new FileOutputStream(destinationFile)) {
-
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = fis.read(buffer)) > 0) {
-                fos.write(buffer, 0, length);
+                @Override
+                public void onDebugStatus(String message) {
+                    Log.v(Constants.TAG, message);
+                }
+            });
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Log.e(Constants.TAG, "Exception in copyfile while trying to await countdown latch.");
+                if(latch.getCount() > 0)
+                {
+                    latch.countDown();
+                }
             }
         }
-        if (!destinationFile.exists()) {
-            throw new IOException("Error, file : " + destPath + " does not exist after copy.");
-        }
         else {
-            File destinationRealName = new File(destPath);
-            destinationFile.renameTo(destinationRealName);
+
+            File sourceFile = new File(srcPath);
+            File destinationFile = new File(destPath + "_temporary");
+
+            if (!sourceFile.exists()) {
+                throw new IOException("Source file not found: " + srcPath);
+            }
+
+            if (!destinationFile.exists()) {
+                destinationFile.createNewFile();
+            }
+
+            try (FileInputStream fis = new FileInputStream(sourceFile);
+                 FileOutputStream fos = new FileOutputStream(destinationFile)) {
+
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = fis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, length);
+                }
+            }
+            if (!destinationFile.exists()) {
+                throw new IOException("Error, file : " + destPath + " does not exist after copy.");
+            } else {
+                File destinationRealName = new File(destPath);
+                destinationFile.renameTo(destinationRealName);
+            }
+        }
+    }
+
+    public static void copySingleFileWithChmod(int nChmod, int nChmod_octal, String sDestination, String sSource, boolean useMx, Context context) {
+        File destinationFile = new File(sDestination);
+        File destinationDir = new File(destinationFile.getParent());
+        if(destinationDir.exists() == false)
+        {
+            destinationDir.mkdirs();
+        }
+
+        File destFile = new File(sDestination);
+        if(destFile.exists())
+        {
+            destFile.delete();
+        }
+
+        Log.d(Constants.TAG, "Copying file from:" + sSource + " to destination:" + sDestination);
+        try {
+            FileHelper.checkFolderPermissions(context, sDestination);
+            FileHelper.copyFile(sSource, sDestination, useMx, context);
+        } catch (IOException e) {
+            Log.e(Constants.TAG, "Exception while copying source:" + sSource + " to destination:" + sDestination + "\nException:" + e.getMessage());
+            return;
+        }
+
+        File destFileCopied = new File(sDestination);
+        if(destFileCopied.exists())
+        {
+            Log.d(Constants.TAG, "File copied with success to:" + sDestination);
+        }
+        else
+        {
+            Log.e(Constants.TAG, "Unkown error, file not found, please contact your administrator.");
+            return;
+        }
+
+        if(nChmod != -1)
+        {
+            int oldChmod = 0;
+            try {
+                oldChmod = FileHelper.getPermissions(sDestination);
+            } catch (Exception e) {
+                Log.e(Constants.TAG, "Exception while trying to get old chmod.\nException:" + e.getMessage());
+                return;
+            }
+            Log.d(Constants.TAG, "Found old chmod:" + String.valueOf(oldChmod));
+            Log.d(Constants.TAG, "Applying CHMOD:" + String.valueOf(nChmod));
+            try {
+                FileHelper.setChmod(sDestination, nChmod_octal);
+            } catch (Exception e) {
+                Log.e(Constants.TAG, "Exception while applying CHMOD:" + nChmod + "\nException:" + e.getMessage());
+            }
+            int newChmod = -1;
+            try {
+                newChmod = FileHelper.getPermissions(sDestination);
+            } catch (Exception e) {
+                Log.e(Constants.TAG, "Exception while trying to get new chmod.\nException:" + e.getMessage());
+            }
+            if(newChmod == nChmod) {
+                Log.d(Constants.TAG, "Chmod applied with success to:" + sDestination);
+            }
+            else
+            {
+                Log.d(Constants.TAG, "Error while applying chmod:" + String.valueOf(nChmod) + " found chmod:" + String.valueOf(newChmod));
+            }
+        }
+    }
+
+
+    public static void copyFolder(String srcPath, String destPath, int chMod, int chModOctal, boolean useMx, Context context) throws IOException {
+        File sourceDir = new File(srcPath);
+        File destDir = new File(destPath);
+
+        if (!sourceDir.exists()) {
+            throw new IOException("Source folder not found: " + srcPath);
+        }
+
+        if (!sourceDir.isDirectory()) {
+            throw new IOException("Source path is not a directory: " + srcPath);
+        }
+
+        // We do not create the folder, we let the MX FileMgr creating it for us
+        if(useMx == false) {
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
+        }
+
+        // Apply chmod to destination folder to make it browsable
+        if (useMx == false && chMod != -1) {
+            try {
+                setChmod(destPath, chModOctal);
+                Log.d(Constants.TAG, "Chmod applied to folder: " + destPath);
+            } catch (Exception e) {
+                Log.e(Constants.TAG, "Exception while applying chmod to folder: " + destPath + ", Exception: " + e.getMessage());
+            }
+        }
+
+        File[] files = sourceDir.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            String destFilePath = destPath + File.separator + file.getName();
+
+            if (file.isDirectory()) {
+                // Recursive call will create subfolder and apply chmod to it
+                copyFolder(file.getAbsolutePath(), destFilePath, chMod, chModOctal, useMx, context);
+            } else {
+                copyFile(file.getAbsolutePath(), destFilePath, useMx, context);
+                // Apply chmod to copied file
+                if (useMx == false && chMod != -1) {
+                    try {
+                        setChmod(destFilePath, chMod);
+                        Log.d(Constants.TAG, "Chmod applied to file: " + destFilePath);
+                    } catch (Exception e) {
+                        Log.e(Constants.TAG, "Exception while applying chmod to file: " + destFilePath + ", Exception: " + e.getMessage());
+                    }
+                }
+            }
         }
     }
 
@@ -275,5 +438,35 @@ public class FileHelper {
             e.printStackTrace();
         }
         return versionName;
+    }
+
+    private static void copyWithProfileManager(Context context, String sourceFile, String destinationFile, IResultCallbacks callbackInterface) {
+        String profileName = "FileCopy-1";
+        String profileData = "";
+        try {
+            profileData = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                    "<characteristic type=\"Profile\">\n" +
+                    "<parm name=\"ProfileName\" value=\"" + profileName + "\"/>\n" +
+                    "  <characteristic version=\"11.3\" type=\"FileMgr\">\n" +
+                    "    <parm name=\"FileAction\" value=\"1\" />\n" +
+                    "    <characteristic type=\"file-details\">\n" +
+                    "      <parm name=\"TargetAccessMethod\" value=\"2\" />\n" +
+                    "      <parm name=\"TargetPathAndFileName\" value=\"" + destinationFile + "\" />\n" +
+                    "      <parm name=\"IfDuplicate\" value=\"1\" />\n" +
+                    "      <parm name=\"SourceAccessMethod\" value=\"2\" />\n" +
+                    "      <parm name=\"SourcePathAndFileName\" value=\"" + sourceFile + "\" />\n" +
+                    "    </characteristic>\n" +
+                    "  </characteristic>\n" +
+                    "</characteristic>\n";
+
+            ProfileManagerCommand profileManagerCommand = new ProfileManagerCommand(context);
+            profileManagerCommand.execute(profileData, profileName, callbackInterface);
+            //}
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (callbackInterface != null) {
+                callbackInterface.onError("Error on profile: " + profileName + "\nError:" + e.getLocalizedMessage() + "\nProfileData:" + profileData, "");
+            }
+        }
     }
 }
