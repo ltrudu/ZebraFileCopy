@@ -52,6 +52,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:exported="true"
+            android:name=".DeleteBroadcastReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.zebra.zebrafilecopy.deletefile" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
         <!-- Register the managed configuration broadcast receiver -->
         <receiver android:name=".AppRestrictionsChangeReceiver"
             android:exported="true">

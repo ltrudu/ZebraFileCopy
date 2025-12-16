@@ -142,26 +142,29 @@ public class FileHelper {
             copyWithProfileManager(context, srcPath, destPath, new IResultCallbacks() {
                 @Override
                 public void onSuccess(String message, String resultXML) {
-                    Log.d(Constants.TAG, message);
+                    LogUtils.d(Constants.TAG, message);
+                    File destPathFile = new File(destPath);
+                    if(destPathFile.exists())
+                        LogUtils.i(Constants.TAG, "Success copying file with MX: " + destPath);
                     latch.countDown();
                 }
 
                 @Override
                 public void onError(String message, String resultXML) {
-                    Log.e(Constants.TAG, message);
-                    Log.e(Constants.TAG, resultXML);
+                    LogUtils.e(Constants.TAG, message);
+                    LogUtils.e(Constants.TAG, resultXML);
                     latch.countDown();
                 }
 
                 @Override
                 public void onDebugStatus(String message) {
-                    Log.v(Constants.TAG, message);
+                    LogUtils.v(Constants.TAG, message);
                 }
             });
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                Log.e(Constants.TAG, "Exception in copyfile while trying to await countdown latch.");
+                LogUtils.e(Constants.TAG, "Exception in copyfile while trying to await countdown latch.");
                 if(latch.getCount() > 0)
                 {
                     latch.countDown();
@@ -194,7 +197,11 @@ public class FileHelper {
                 throw new IOException("Error, file : " + destPath + " does not exist after copy.");
             } else {
                 File destinationRealName = new File(destPath);
-                destinationFile.renameTo(destinationRealName);
+                if(destinationFile.renameTo(destinationRealName))
+                {
+                    LogUtils.i(Constants.TAG, "File copied with success: " + destPath);
+                }
+
             }
         }
     }
@@ -213,23 +220,23 @@ public class FileHelper {
             destFile.delete();
         }
 
-        Log.d(Constants.TAG, "Copying file from:" + sSource + " to destination:" + sDestination);
+        LogUtils.i(Constants.TAG, "Copying file from:" + sSource + " to destination:" + sDestination);
         try {
             FileHelper.checkFolderPermissions(context, sDestination);
             FileHelper.copyFile(sSource, sDestination, useMx, context);
         } catch (IOException e) {
-            Log.e(Constants.TAG, "Exception while copying source:" + sSource + " to destination:" + sDestination + "\nException:" + e.getMessage());
+            LogUtils.e(Constants.TAG, "Exception while copying source:" + sSource + " to destination:" + sDestination + "\nException:" + e.getMessage());
             return;
         }
 
         File destFileCopied = new File(sDestination);
         if(destFileCopied.exists())
         {
-            Log.d(Constants.TAG, "File copied with success to:" + sDestination);
+            LogUtils.i(Constants.TAG, "File copied with success to:" + sDestination);
         }
         else
         {
-            Log.e(Constants.TAG, "Unkown error, file not found, please contact your administrator.");
+            LogUtils.e(Constants.TAG, "Unkown error, file not found, please contact your administrator.");
             return;
         }
 
@@ -239,28 +246,28 @@ public class FileHelper {
             try {
                 oldChmod = FileHelper.getPermissions(sDestination);
             } catch (Exception e) {
-                Log.e(Constants.TAG, "Exception while trying to get old chmod.\nException:" + e.getMessage());
+                LogUtils.e(Constants.TAG, "Exception while trying to get old chmod.\nException:" + e.getMessage());
                 return;
             }
-            Log.d(Constants.TAG, "Found old chmod:" + String.valueOf(oldChmod));
-            Log.d(Constants.TAG, "Applying CHMOD:" + String.valueOf(nChmod));
+            LogUtils.i(Constants.TAG, "Found old chmod:" + String.valueOf(oldChmod));
+            LogUtils.i(Constants.TAG, "Applying CHMOD:" + String.valueOf(nChmod));
             try {
                 FileHelper.setChmod(sDestination, nChmod_octal);
             } catch (Exception e) {
-                Log.e(Constants.TAG, "Exception while applying CHMOD:" + nChmod + "\nException:" + e.getMessage());
+                LogUtils.e(Constants.TAG, "Exception while applying CHMOD:" + nChmod + "\nException:" + e.getMessage());
             }
             int newChmod = -1;
             try {
                 newChmod = FileHelper.getPermissions(sDestination);
             } catch (Exception e) {
-                Log.e(Constants.TAG, "Exception while trying to get new chmod.\nException:" + e.getMessage());
+                LogUtils.e(Constants.TAG, "Exception while trying to get new chmod.\nException:" + e.getMessage());
             }
             if(newChmod == nChmod) {
-                Log.d(Constants.TAG, "Chmod applied with success to:" + sDestination);
+                LogUtils.i(Constants.TAG, "Chmod applied with success to:" + sDestination);
             }
             else
             {
-                Log.d(Constants.TAG, "Error while applying chmod:" + String.valueOf(nChmod) + " found chmod:" + String.valueOf(newChmod));
+                LogUtils.d(Constants.TAG, "Error while applying chmod:" + String.valueOf(nChmod) + " found chmod:" + String.valueOf(newChmod));
             }
         }
     }
@@ -279,19 +286,20 @@ public class FileHelper {
         }
 
         // We do not create the folder, we let the MX FileMgr creating it for us
-        if(useMx == false) {
+        if(useMx == false)
+        {
             if (!destDir.exists()) {
                 destDir.mkdirs();
             }
         }
 
         // Apply chmod to destination folder to make it browsable
-        if (useMx == false && chMod != -1) {
+        if (!useMx && chMod != -1) {
             try {
                 setChmod(destPath, chModOctal);
-                Log.d(Constants.TAG, "Chmod applied to folder: " + destPath);
+                LogUtils.i(Constants.TAG, "Chmod applied to folder: " + destPath);
             } catch (Exception e) {
-                Log.e(Constants.TAG, "Exception while applying chmod to folder: " + destPath + ", Exception: " + e.getMessage());
+                LogUtils.e(Constants.TAG, "Exception while applying chmod to folder: " + destPath + ", Exception: " + e.getMessage());
             }
         }
 
@@ -312,9 +320,9 @@ public class FileHelper {
                 if (useMx == false && chMod != -1) {
                     try {
                         setChmod(destFilePath, chMod);
-                        Log.d(Constants.TAG, "Chmod applied to file: " + destFilePath);
+                        LogUtils.i(Constants.TAG, "Chmod applied to file: " + destFilePath);
                     } catch (Exception e) {
-                        Log.e(Constants.TAG, "Exception while applying chmod to file: " + destFilePath + ", Exception: " + e.getMessage());
+                        LogUtils.e(Constants.TAG, "Exception while applying chmod to file: " + destFilePath + ", Exception: " + e.getMessage());
                     }
                 }
             }
@@ -432,8 +440,8 @@ public class FileHelper {
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
             versionName = packageInfo.versionName;
             int versionCode = packageInfo.versionCode;
-            Log.d("AppVersion", "Version Name: " + versionName);
-            Log.d("AppVersion", "Version Code: " + versionCode);
+            LogUtils.d("AppVersion", "Version Name: " + versionName);
+            LogUtils.d("AppVersion", "Version Code: " + versionCode);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -466,6 +474,154 @@ public class FileHelper {
             e.printStackTrace();
             if (callbackInterface != null) {
                 callbackInterface.onError("Error on profile: " + profileName + "\nError:" + e.getLocalizedMessage() + "\nProfileData:" + profileData, "");
+            }
+        }
+    }
+
+    private static void deleteWithProfileManager(Context context, String fileOrFolderToDelete, IResultCallbacks callbackInterface) {
+        String profileName = "DeleteFile-1";
+        String profileData = "";
+        try {
+            profileData = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                    "<characteristic type=\"Profile\">\n" +
+                    "<parm name=\"ProfileName\" value=\"" + profileName + "\"/>\n" +
+                    "  <characteristic version=\"11.3\" type=\"FileMgr\">\n" +
+                    "    <parm name=\"FileAction\" value=\"4\" />\n" +
+                    "    <characteristic type=\"file-details\">\n" +
+                    "      <parm name=\"TargetPathAndFolderName\" value=\"" + fileOrFolderToDelete + "\" />\n" +
+                     "    </characteristic>\n" +
+                    "  </characteristic>\n" +
+                    "</characteristic>\n";
+
+            ProfileManagerCommand profileManagerCommand = new ProfileManagerCommand(context);
+            profileManagerCommand.execute(profileData, profileName, callbackInterface);
+            //}
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (callbackInterface != null) {
+                callbackInterface.onError("Error on profile: " + profileName + "\nError:" + e.getLocalizedMessage() + "\nProfileData:" + profileData, "");
+            }
+        }
+    }
+
+    public static void deleteFileOrFolder(String fileOrFolderToDelete, boolean useMx, Context context) throws IOException {
+        if(useMx)
+        {
+            CountDownLatch latch = new CountDownLatch(1);
+            deleteWithProfileManager(context, fileOrFolderToDelete, new IResultCallbacks() {
+                @Override
+                public void onSuccess(String message, String resultXML) {
+                    LogUtils.d(Constants.TAG, message);
+                    File destPathFile = new File(fileOrFolderToDelete);
+                    if(destPathFile.exists() == false)
+                        LogUtils.i(Constants.TAG, "Success deleting file/folder with MX: " + fileOrFolderToDelete);
+                    else
+                        LogUtils.e(Constants.TAG, "Error deleting file/folder with MX, file still exists: " + fileOrFolderToDelete);
+
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(String message, String resultXML) {
+                    LogUtils.e(Constants.TAG, message);
+                    LogUtils.e(Constants.TAG, resultXML);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onDebugStatus(String message) {
+                    LogUtils.v(Constants.TAG, message);
+                }
+            });
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                LogUtils.e(Constants.TAG, "Exception in deleting file while trying to await countdown latch.");
+                if(latch.getCount() > 0)
+                {
+                    latch.countDown();
+                }
+            }
+        }
+        else {
+
+            File sourceFile = new File(fileOrFolderToDelete);
+
+            if (!sourceFile.exists()) {
+                throw new IOException("Source file/folder not found: " + fileOrFolderToDelete);
+            }
+
+            if(sourceFile.isDirectory())
+            {
+                deleteFolderRecursively(fileOrFolderToDelete);
+            }
+            else
+            {
+                if(!sourceFile.delete())
+                    throw new IOException("Could not delete file: " + sourceFile.getPath());
+                else
+                {
+                    File deletedFile = new File(fileOrFolderToDelete);
+                    if(deletedFile.exists() == false)
+                        LogUtils.i(Constants.TAG, "Success deleting file/folder: " + fileOrFolderToDelete);
+                    else
+                        LogUtils.e(Constants.TAG, "Error deleting file/folder, file still exists: " + fileOrFolderToDelete);
+                }
+            }
+        }
+    }
+
+    private static void deleteFolderRecursively(String filePath) throws IOException
+    {
+        File sourceDir = new File(filePath);
+
+        File[] files = sourceDir.listFiles();
+        if (files == null) {
+            if(sourceDir.delete()) {
+                if(sourceDir.exists() == false)
+                    LogUtils.i(Constants.TAG, "Success deleting folder: " + filePath);
+                else
+                    LogUtils.e(Constants.TAG, "Error deleting folder, folder still exists: " + filePath);
+            }
+            else {
+                LogUtils.e(Constants.TAG, "Error deleting folder: " + filePath);
+            }
+            return;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                // Recursive call will delete subfolders
+                deleteFolderRecursively(file.getPath());
+            } else {
+                if(file.delete() == false)
+                {
+                    throw new IOException("Could not delete file: " + filePath);
+                }
+                else
+                {
+                    File deletedFile = new File(filePath);
+                    if(deletedFile.exists() == false)
+                        LogUtils.i(Constants.TAG, "Success deleting file: " + filePath);
+                    else
+                        LogUtils.e(Constants.TAG, "Error deleting file, file still exists: " + filePath);
+
+                }
+            }
+        }
+
+        // All files should have been cleaned
+        // Let's check
+        files = sourceDir.listFiles();
+        if(files.length > 0)
+        {
+            throw new IOException("Could not remove files from folder: " + filePath + "\nRemaining files: " + String.valueOf(files.length));
+        }
+        else
+        {
+            if(!sourceDir.delete())
+            {
+                throw new IOException("Could not delete path: " + filePath);
             }
         }
     }

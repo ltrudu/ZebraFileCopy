@@ -28,8 +28,8 @@ public class MainApplication extends Application {
     public static iMainApplicationCallback iMainApplicationCallback = null;
 
     AppRestrictionsChangeReceiver appRestrictionsChangeReceiver = new AppRestrictionsChangeReceiver();
-    CopyBroadcastReceiver mReceiver = null;
-
+    CopyBroadcastReceiver mCopyBroadcastReceiver = null;
+    DeleteBroadcastReceiver mDeleteBroadcastReceiver = null;
 
     // Let's Add a fake delay of 2000 milliseconds just for the show ;)
     // Otherwise Splash Screen is too fast
@@ -41,19 +41,45 @@ public class MainApplication extends Application {
 
         registerRestrictionChangesReceiver();
         registerCopyBroadcastReceiver();
+        registerDeleteBroadcastReceiver();
 
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                CriticalPermissionsHelper.grantPermission(MainApplication.this, EPermissionType.MANAGE_EXTERNAL_STORAGE, new IResultCallbacks() {
+                CriticalPermissionsHelper.grantPermission(MainApplication.this, EPermissionType.SYSTEM_ALERT_WINDOW, new IResultCallbacks() {
                     @Override
                     public void onSuccess(String message, String resultXML) {
-                        permissionGranted = true;
-                        sErrorMessage = null;
-                        if(MainApplication.iMainApplicationCallback != null)
-                        {
-                            MainApplication.iMainApplicationCallback.onPermissionSuccess(message);
-                        }
+                        CriticalPermissionsHelper.grantPermission(MainApplication.this, EPermissionType.MANAGE_EXTERNAL_STORAGE, new IResultCallbacks() {
+                            @Override
+                            public void onSuccess(String message, String resultXML) {
+                                permissionGranted = true;
+                                sErrorMessage = null;
+                                if(MainApplication.iMainApplicationCallback != null)
+                                {
+                                    MainApplication.iMainApplicationCallback.onPermissionSuccess(message);
+                                }
+                            }
+
+                            @Override
+                            public void onError(String message, String resultXML) {
+                                Toast.makeText(MainApplication.this, message, Toast.LENGTH_LONG).show();
+                                permissionGranted = true;
+                                sErrorMessage = message;
+                                if(MainApplication.iMainApplicationCallback != null)
+                                {
+                                    MainApplication.iMainApplicationCallback.onPermissionError(message);
+                                }
+                            }
+
+                            @Override
+                            public void onDebugStatus(String message) {
+                                if(MainApplication.iMainApplicationCallback != null)
+                                {
+                                    MainApplication.iMainApplicationCallback.onPermissionDebug(message);
+                                }
+                            }
+                        });
+
                     }
 
                     @Override
@@ -84,6 +110,7 @@ public class MainApplication extends Application {
         super.onTerminate();
         unregisterReceiver(appRestrictionsChangeReceiver);
         unRegisterCopyBroadcastReceiver();
+        unRegisterDeleteBroadcastReceiver();
     }
 
     private void registerRestrictionChangesReceiver()
@@ -95,21 +122,40 @@ public class MainApplication extends Application {
     }
 
     private void registerCopyBroadcastReceiver() {
-        if(mReceiver == null)
+        if(mCopyBroadcastReceiver == null)
         {
-            mReceiver = new CopyBroadcastReceiver();
+            mCopyBroadcastReceiver = new CopyBroadcastReceiver();
             IntentFilter myIntenrFilter = new IntentFilter();
             myIntenrFilter.addAction("com.zebra.zebrafilecopy.copyfile");
-            ContextCompat.registerReceiver(this, mReceiver, myIntenrFilter, RECEIVER_EXPORTED);
+            ContextCompat.registerReceiver(this, mCopyBroadcastReceiver, myIntenrFilter, RECEIVER_EXPORTED);
         }
     }
 
     private void unRegisterCopyBroadcastReceiver()
     {
-        if(mReceiver != null)
+        if(mCopyBroadcastReceiver != null)
         {
-            unregisterReceiver(mReceiver);
-            mReceiver = null;
+            unregisterReceiver(mCopyBroadcastReceiver);
+            mCopyBroadcastReceiver = null;
+        }
+    }
+
+    private void registerDeleteBroadcastReceiver() {
+        if(mDeleteBroadcastReceiver == null)
+        {
+            mDeleteBroadcastReceiver = new DeleteBroadcastReceiver();
+            IntentFilter myIntenrFilter = new IntentFilter();
+            myIntenrFilter.addAction("com.zebra.zebrafilecopy.deletefile");
+            ContextCompat.registerReceiver(this, mDeleteBroadcastReceiver, myIntenrFilter, RECEIVER_EXPORTED);
+        }
+    }
+
+    private void unRegisterDeleteBroadcastReceiver()
+    {
+        if(mDeleteBroadcastReceiver != null)
+        {
+            unregisterReceiver(mDeleteBroadcastReceiver);
+            mDeleteBroadcastReceiver = null;
         }
     }
 }

@@ -27,10 +27,12 @@ import static com.zebra.zebrafilecopy.Constants.DEFAULT_DESTINATION_FILE;
 import static com.zebra.zebrafilecopy.Constants.DEFAULT_NUMERICAL_CHMOD;
 import static com.zebra.zebrafilecopy.Constants.DEFAULT_SOURCE_FILE;
 import static com.zebra.zebrafilecopy.Constants.DEFAULT_UNIX_CHMOD;
+import static com.zebra.zebrafilecopy.Constants.DEFAULT_USE_MX;
 import static com.zebra.zebrafilecopy.Constants.KEY_DESTINATION_FILE;
 import static com.zebra.zebrafilecopy.Constants.KEY_NUMERICAL_CHMOD;
 import static com.zebra.zebrafilecopy.Constants.KEY_SOURCE_FILE;
 import static com.zebra.zebrafilecopy.Constants.KEY_UNIX_CHMOD;
+import static com.zebra.zebrafilecopy.Constants.KEY_USE_MX;
 
 public class ManagedConfigHelper {
     public static void ProcessManagedConfiguration(Context context) {
@@ -54,11 +56,13 @@ public class ManagedConfigHelper {
                 String destinationFilePath = managedConfig.getString(KEY_DESTINATION_FILE, DEFAULT_DESTINATION_FILE);
                 int optionalNumericalCHMOD = managedConfig.getInt(KEY_NUMERICAL_CHMOD, DEFAULT_NUMERICAL_CHMOD);
                 String optionalUnixStyleCHMOD = managedConfig.getString(KEY_UNIX_CHMOD, DEFAULT_UNIX_CHMOD);
+                boolean useMx = managedConfig.getBoolean(KEY_USE_MX, DEFAULT_USE_MX);
 
                 logInfo("AppRestrictionsChangeReceiver: " + "Source File: " + sourceFilePath);
                 logInfo("AppRestrictionsChangeReceiver: " + "Destination File: " + destinationFilePath);
                 logInfo("AppRestrictionsChangeReceiver: " + "Optional Numerical CHMOD: " + optionalNumericalCHMOD);
                 logInfo("AppRestrictionsChangeReceiver: " + "Optional Unix Style CHMOD: " + optionalUnixStyleCHMOD);
+                logInfo("AppRestrictionsChangeReceiver: " + "UseMX: " + (useMx ? "True" : "False"));
 
                 final String resultInfo = "Copying file from:\n" + sourceFilePath + "\nto:\n" + destinationFilePath + ((optionalNumericalCHMOD != -1 || optionalUnixStyleCHMOD != null) ? "\nwith chmod: " + ((optionalNumericalCHMOD != -1 ? optionalNumericalCHMOD : optionalUnixStyleCHMOD)) : "") + "\n";
 
@@ -182,7 +186,7 @@ public class ManagedConfigHelper {
         }
     }
 
-    private static void sendFeedback(Context context, String key, String message) {
+    public static void sendFeedback(Context context, String key, String message) {
         logInfo("Feedback Channel: Key: " + key + ", Message: " + message);
 
         if(hasRequiredPermissions(context) == false)
@@ -265,7 +269,7 @@ public class ManagedConfigHelper {
 
     private static void logInfo(String message)
     {
-        Log.d(Constants.TAG,  message);
+        LogUtils.d(Constants.TAG,  message);
         if(MainActivity.mMainActivity != null)
         {
             //MainActivity.mMainActivity.addLineToResults( "Debug: " + message);
@@ -273,7 +277,7 @@ public class ManagedConfigHelper {
     }
 
     private static void logError(String message) {
-        Log.e(Constants.TAG, message);
+        LogUtils.e(Constants.TAG, message);
         if (MainActivity.mMainActivity != null) {
             MainActivity.mMainActivity.addLineToResults("Error: " + message);
         }

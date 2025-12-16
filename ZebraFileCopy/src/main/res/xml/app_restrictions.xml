@@ -19,4 +19,9 @@
         android:title="Unix Style Chmod [Optional]"
         android:restrictionType="string"
         android:defaultValue="" />
+    <restriction
+        android:key="UseMX"
+        android:title="Use MX FileMgr"
+        android:defaultValue="false"
+        android:restrictionType="bool" />
 </restrictions>

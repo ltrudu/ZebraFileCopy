@@ -7,7 +7,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.zebra.zebrafilecopy.mdna"
+        applicationId "com.zebra.zebrafilecopy.ext"
         minSdk 33
         targetSdk 34
         versionCode 22

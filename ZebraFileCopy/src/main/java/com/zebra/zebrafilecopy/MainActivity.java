@@ -101,23 +101,23 @@ public class MainActivity extends AppCompatActivity {
             String nChmod_octalString = FileHelper.convertPermissionToOctalString("-rw-rw-rw-");
             int nChmod_octal = Integer.parseInt(nChmod_octalString, 8);
             int nChmod = Integer.parseInt(nChmod_octalString);
-            Log.d(Constants.TAG, "Copying file: /sdcard/Documents/MotoRDP.xml to /enterprise/usr/MotoRDP.xml");
+            LogUtils.d(Constants.TAG, "Copying file: /sdcard/Documents/MotoRDP.xml to /enterprise/usr/MotoRDP.xml");
             copyFile("/sdcard/Documents/MotoRDP.xml", "/enterprise/usr/MotoRDP.xml", false, this);
-            Log.d(Constants.TAG, "File: /sdcard/Documents/MotoRDP.xml copied successfully to /enterprise/usr/MotoRDP.xml");
+            LogUtils.d(Constants.TAG, "File: /sdcard/Documents/MotoRDP.xml copied successfully to /enterprise/usr/MotoRDP.xml");
             setChmod("/enterprise/usr/MotoRDP.xml", nChmod_octal);
             int newChmod = 0;
             newChmod = FileHelper.getPermissions("/enterprise/usr/MotoRDP.xml");
             if(newChmod != nChmod)
             {
-                Log.e(Constants.TAG, "Error, chmod not set on file:" + "/enterprise/usr/MotoRDP.xml" + "\nChmod expected: 0777\nChmod found: " + newChmod);
+                LogUtils.e(Constants.TAG, "Error, chmod not set on file:" + "/enterprise/usr/MotoRDP.xml" + "\nChmod expected: 0777\nChmod found: " + newChmod);
             }
             else
             {
-                Log.d(Constants.TAG, "Chmod set to 0777 on file /enterprise/usr/MotoRDP.xml");
+                LogUtils.d(Constants.TAG, "Chmod set to 0777 on file /enterprise/usr/MotoRDP.xml");
             }
             finish();
         } catch (Exception e) {
-            Log.e(Constants.TAG, "Exception :" + e.getMessage());
+            LogUtils.e(Constants.TAG, "Exception :" + e.getMessage());
         }
         finish();
     }
@@ -129,24 +129,24 @@ public class MainActivity extends AppCompatActivity {
 
             int nChmod_octal = Integer.parseInt(nChmod_octalString, 8);
             int nChmod = Integer.parseInt(nChmod_octalString);
-            Log.d(Constants.TAG, "Copying file: " + sourcePath + "to " + destPath);
+            LogUtils.d(Constants.TAG, "Copying file: " + sourcePath + "to " + destPath);
             checkFolderPermissions(this, destPath);
             copyFile(sourcePath, destPath, useMx, this);
-            Log.d(Constants.TAG, "File: " + sourcePath + "copied successfully to" + destPath);
+            LogUtils.d(Constants.TAG, "File: " + sourcePath + "copied successfully to" + destPath);
             setChmod(destPath, nChmod_octal);
             int newChmod = 0;
             newChmod = FileHelper.getPermissions(destPath);
             if(newChmod != nChmod)
             {
-                Log.e(Constants.TAG, "Error, chmod not set on file:" + destPath + "\nChmod expected: " + String.valueOf(nChmod) + "\nChmod found: " + String.valueOf(newChmod));
+                LogUtils.e(Constants.TAG, "Error, chmod not set on file:" + destPath + "\nChmod expected: " + String.valueOf(nChmod) + "\nChmod found: " + String.valueOf(newChmod));
             }
             else
             {
-                Log.d(Constants.TAG, "Chmod set to " + String.valueOf(newChmod) + " on file /enterprise/usr/MotoRDP.xml");
+                LogUtils.d(Constants.TAG, "Chmod set to " + String.valueOf(newChmod) + " on file /enterprise/usr/MotoRDP.xml");
             }
             finish();
         } catch (Exception e) {
-            Log.e(Constants.TAG, "Exception :" + e.getMessage());
+            LogUtils.e(Constants.TAG, "Exception :" + e.getMessage());
         }
         finish();
     }

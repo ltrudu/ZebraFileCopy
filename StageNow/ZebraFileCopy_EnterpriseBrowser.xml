@@ -1,0 +1,24 @@
+﻿<wap-provisioningdoc>
+  <characteristic version="10.5" type="Intent">
+    <parm name="Action" value="Broadcast" />
+    <parm name="ActionName" value="com.zebra.zebrafilecopy.copyfile" />
+    <parm name="Package" value="com.zebra.zebrafilecopy.ext" />
+    <parm name="Class" value="com.zebra.zebrafilecopy.CopyBroadcastReceiver" />
+    <parm name="Category" value="android.intent.category.DEFAULT" />
+    <characteristic type="Extra">
+      <parm name="ExtraType" value="string" />
+      <parm name="ExtraName" value="source" />
+      <parm name="ExtraValue" value="/sdcard/Documents/enterprisebrowser" />
+    </characteristic>
+    <characteristic type="Extra1">
+      <parm name="Extra1Type" value="string" />
+      <parm name="Extra1Name" value="destination" />
+      <parm name="Extra1Value" value="/enterprise/device/enterprisebrowser" />
+    </characteristic>
+    <characteristic type="Extra2">
+      <parm name="Extra2Type" value="string" />
+      <parm name="Extra2Name" value="usemx" />
+      <parm name="Extra2Value" value="true" />
+    </characteristic>
+  </characteristic>
+</wap-provisioningdoc>

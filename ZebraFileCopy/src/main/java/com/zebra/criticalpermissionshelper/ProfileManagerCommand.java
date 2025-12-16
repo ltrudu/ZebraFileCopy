@@ -12,6 +12,7 @@ import com.symbol.emdk.EMDKResults;
 import com.symbol.emdk.ProfileManager;
 import com.zebra.criticalpermissionshelper.CriticalPermissionsHelper;
 import com.zebra.criticalpermissionshelper.IResultCallbacks;
+import com.zebra.zebrafilecopy.LogUtils;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -433,23 +434,23 @@ public class ProfileManagerCommand extends com.zebra.criticalpermissionshelper.C
         switch(messageType)
         {
             case ERROR:
-                Log.e(TAG, message);
+                LogUtils.e(TAG, message);
                 onProfileExecutedStatusChanged("ERROR:" + message);
                 break;
             case SUCCESS:
-                Log.v(TAG, message);
+                LogUtils.v(TAG, message);
                 onProfileExecutedStatusChanged("SUCCESS:" + message);
                 break;
             case VERBOSE:
-                Log.v(TAG, message);
+                LogUtils.v(TAG, message);
                 onProfileExecutedStatusChanged("VERBOSE:" + message);
                 break;
             case WARNING:
-                Log.w(TAG, message);
+                LogUtils.w(TAG, message);
                 onProfileExecutedStatusChanged("WARNING:" + message);
                 break;
             case DEBUG:
-                Log.d(TAG,message);
+                LogUtils.d(TAG,message);
                 onProfileExecutedStatusChanged("DEBUG:" + message);
         }
     }

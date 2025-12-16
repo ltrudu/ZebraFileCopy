@@ -19,7 +19,7 @@ import java.io.IOException;
 public class CopyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(Constants.TAG, "CopyBroadcastReceiver::onReceive");
+        LogUtils.d(Constants.TAG, "CopyBroadcastReceiver::onReceive");
 
         // Ensure that we have the right permissions all the time
         // because we don't know if the user will have launched the app from the launcher
@@ -34,13 +34,13 @@ public class CopyBroadcastReceiver extends BroadcastReceiver {
 
         if(sSource == null)
         {
-            Log.e(Constants.TAG, "You must specify a source path as an argument with --es [source]");
+            LogUtils.e(Constants.TAG, "You must specify a source path as an argument with --es [source]");
             return;
         }
 
         if(sDestination == null)
         {
-            Log.e(Constants.TAG, "You must specify a destination path as an argument with --es [destination]");
+            LogUtils.e(Constants.TAG, "You must specify a destination path as an argument with --es [destination]");
             return;
         }
 
@@ -70,19 +70,23 @@ public class CopyBroadcastReceiver extends BroadcastReceiver {
                 File sourceFile = new File(sSource);
                 if(sourceFile.exists() == false)
                 {
-                    Log.e(Constants.TAG, "Source file not found:" + sSource);
+                    LogUtils.e(Constants.TAG, "Source file not found:" + sSource);
                     return;
                 }
 
                 if(sourceFile.isDirectory() == false) {
+                    LogUtils.reportOnlyInfoAndErrorsToMainActivity = true;
                     FileHelper.copySingleFileWithChmod(nChmod, nChmod_octal, sDestination, sSource, useMX, context);
+                    LogUtils.reportOnlyInfoAndErrorsToMainActivity = false;
                 }
                 else
                 {
                     try {
+                        LogUtils.reportOnlyInfoAndErrorsToMainActivity = true;
                         FileHelper.copyFolder(sSource, sDestination, nChmod, nChmod_octal, useMX, context);
+                        LogUtils.reportOnlyInfoAndErrorsToMainActivity = false;
                     } catch (IOException e) {
-                        Log.e(Constants.TAG, "Copy folder errpr:" + e.getMessage());
+                        LogUtils.e(Constants.TAG, "Copy folder errpr:" + e.getMessage());
                         e.printStackTrace();
                     }
                 }
