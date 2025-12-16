@@ -7,11 +7,11 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.zebra.zebrafilecopy.ext"
+        applicationId "com.zebra.zebrafilecopy.mdna"
         minSdk 33
         targetSdk 34
-        versionCode 14
-        versionName "1.14"
+        versionCode 22
+        versionName "1.22"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,7 +34,8 @@ dependencies {
     implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
-    implementation libs.criticalpermissionhelper
+    implementation libs.emdk
+    //implementation libs.criticalpermissionhelper
     implementation libs.enterprisefeeback
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

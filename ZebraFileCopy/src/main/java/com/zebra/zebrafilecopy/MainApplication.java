@@ -11,6 +11,8 @@ import com.zebra.criticalpermissionshelper.CriticalPermissionsHelper;
 import com.zebra.criticalpermissionshelper.EPermissionType;
 import com.zebra.criticalpermissionshelper.IResultCallbacks;
 
+import androidx.core.content.ContextCompat;
+
 public class MainApplication extends Application {
 
     public interface iMainApplicationCallback
@@ -26,6 +28,7 @@ public class MainApplication extends Application {
     public static iMainApplicationCallback iMainApplicationCallback = null;
 
     AppRestrictionsChangeReceiver appRestrictionsChangeReceiver = new AppRestrictionsChangeReceiver();
+    CopyBroadcastReceiver mReceiver = null;
 
 
     // Let's Add a fake delay of 2000 milliseconds just for the show ;)
@@ -37,6 +40,7 @@ public class MainApplication extends Application {
         super.onCreate();
 
         registerRestrictionChangesReceiver();
+        registerCopyBroadcastReceiver();
 
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
@@ -75,11 +79,37 @@ public class MainApplication extends Application {
         }, S_FAKE_DELAY); // Let's add some S_FAKE_DELAY like in music production
     }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        unregisterReceiver(appRestrictionsChangeReceiver);
+        unRegisterCopyBroadcastReceiver();
+    }
+
     private void registerRestrictionChangesReceiver()
     {
         IntentFilter restrictionsFilter =
                 new IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED);
 
-        registerReceiver(appRestrictionsChangeReceiver, restrictionsFilter);
+        ContextCompat.registerReceiver(this, appRestrictionsChangeReceiver, restrictionsFilter, RECEIVER_EXPORTED);
+    }
+
+    private void registerCopyBroadcastReceiver() {
+        if(mReceiver == null)
+        {
+            mReceiver = new CopyBroadcastReceiver();
+            IntentFilter myIntenrFilter = new IntentFilter();
+            myIntenrFilter.addAction("com.zebra.zebrafilecopy.copyfile");
+            ContextCompat.registerReceiver(this, mReceiver, myIntenrFilter, RECEIVER_EXPORTED);
+        }
+    }
+
+    private void unRegisterCopyBroadcastReceiver()
+    {
+        if(mReceiver != null)
+        {
+            unregisterReceiver(mReceiver);
+            mReceiver = null;
+        }
     }
 }
