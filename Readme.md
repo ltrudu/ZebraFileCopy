@@ -88,6 +88,8 @@ Or use the following XML to import a StageNow Profile:
 </wap-provisioningdoc>
 ```
 
+## Additional StageNow profiles are available in the Stagenow folder of this repository
+
 ********************************
 
 Managed Configuration
