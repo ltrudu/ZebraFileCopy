@@ -94,3 +94,16 @@ Or use the following XML to import a StageNow Profile if you want to start the a
   </characteristic>
 </wap-provisioningdoc>
 ```
+
+********************************
+
+Deploying Zebra ERDP
+
+********************************
+
+To deploy Zebra ERDP, use your favorite EMM or StageNow FileMgr to deploy your config file Documents/MotoRDP.xml.
+
+Install ZebraFileCopy on the target device.
+
+Launch ZebraFileCopy to aquire necessary permissions and register the broadcast receiver that will receive the copy intents.
+
